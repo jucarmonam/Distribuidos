@@ -2,17 +2,16 @@
 #include <iostream>
 #include <vector>
 #include <random>
-#include <chrono>
 
 #define R_ARGS 1
 #define DIMENSIONS 3
-#define DT 1
+#define DT 0.01
 
 /*Variable para el número de particulas*/
 int Nparticles;
 float GravityConstant;
 
-float softening = 1;
+float softening = 0.1;
 
 struct particle
 {
@@ -55,8 +54,8 @@ particle* calculateNewPosition(particle* particles){
 			//dz = *(positions + (j * DIMENSIONS + 2)) - *(positions + (i * DIMENSIONS + 2));
 
 			//matrix that stores 1/r^3 for all particle pairwise particle separations 
-			float inv_r = 1/sqrt(dx*dx + dy*dy + softening*softening);
-			float inv_r3 = pow(inv_r, 3);
+			float inv_r3 = sqrt(dx*dx + dy*dy + softening*softening);
+			inv_r3 = 1/(pow(inv_r3, 2));
 
 			ax = GravityConstant * (dx * inv_r3) * particles[j].mass;
 			ay = GravityConstant * (dy * inv_r3) * particles[j].mass;
@@ -93,16 +92,16 @@ int main(int argc,char* argv[])
 
     Nparticles = atoi(*(argv + 1));
 
-    sf::RenderWindow window(sf::VideoMode(800, 600), "N-Body");
+    sf::RenderWindow window(sf::VideoMode(1920, 1080), "N-Body");
 
     std::cout << "Initializing..." << std::endl;
 
-    window.setFramerateLimit(30);
+    window.setFramerateLimit(20);
 
-    auto const screen_width = 500;
-	auto const screen_height = 500;
+    auto const screen_width = 1920;
+	auto const screen_height = 1000;
 
-	GravityConstant = 1;
+	GravityConstant = 1.0;
 
     unsigned int timer;
 
@@ -119,11 +118,10 @@ int main(int argc,char* argv[])
 		int x = getRandomInt(0, screen_width), y = getRandomInt(0, screen_height);
 		particles[i].pos_x = x;
 		particles[i].pos_y = y;
-		particles[i].mass = 100;
+		particles[i].mass = 10;
 	}
 
     timer = 400;
-
 
 	float fps;
     // run the program as long as the window is open
@@ -137,12 +135,6 @@ int main(int argc,char* argv[])
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-
-        if (timer == 400)
-		{
-			mpos = sf::Vector2f(getRandomInt(screen_width / 5, screen_width / 5 * 4), getRandomInt(screen_height / 5, screen_height / 5 * 4));
-			timer = 0;
-		}
 
         // clear the window with black color
         window.clear(sf::Color::Black);
@@ -176,7 +168,7 @@ int main(int argc,char* argv[])
 			window.draw(p_mid);
 		}
 
-		//particles = calculateNewPosition(particles);
+		particles = calculateNewPosition(particles);
 
         // end the current frame
         window.display();
