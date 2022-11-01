@@ -1,0 +1,8 @@
+sincronica
+g++ nBodySimulation.cpp -o nBody -lsfml-graphics -lsfml-window -lsfml-system
+
+openMP
+g++ -fopenmp nBodyOpenMP.cpp -o nBodyOpenMP -lsfml-graphics -lsfml-window -lsfml-system
+
+CUDA
+nvcc nBodyCUDA.cu -o nBodyCUDA -lsfml-graphics -lsfml-window -lsfml-system

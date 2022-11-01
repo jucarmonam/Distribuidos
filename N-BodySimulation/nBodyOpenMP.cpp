@@ -63,7 +63,7 @@ void calculateNewPosition(){
         int startPos = (thread_id < (Nparticles) % nThreads) ? ((Nparticles) / nThreads) * thread_id + thread_id : ((Nparticles) / nThreads) * thread_id + (Nparticles) % nThreads;
         int endPos = (thread_id < (Nparticles) % nThreads) ? startPos + ((Nparticles) / nThreads) : startPos + ((Nparticles) / nThreads) - 1;
 
-        for (startPos; startPos <= endPos; startPos++){
+        for (; startPos <= endPos; startPos++){
             ax=0.0;
             ay=0.0;
             for (int j = 0; j < Nparticles; j++)
