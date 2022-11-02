@@ -47,7 +47,6 @@ __global__ void calculateNewPosition(particle *particles, particle *newParticles
         ay=0.0;
         for (int j = 0; j < nParticles; j++)
         {
-            printf("particle %d \n", startPos);
             //recorremos sobre todas las Nparticles "j"
             dx = particles[j].pos_x - particles[startPos].pos_x;        
             dy = particles[j].pos_y - particles[startPos].pos_y;
@@ -60,10 +59,6 @@ __global__ void calculateNewPosition(particle *particles, particle *newParticles
             ay = gravityConstant * (dy * inv_r3) * particles[j].mass;
 
             if(startPos != j){
-                printf("PosX: %f \n",particles[startPos].pos_x);
-                printf("dt: %f \n",dt);
-                printf("VelX: %f \n",newParticles[startPos].vel_x);
-                printf("ax: %f \n",ax);
                 //actualizamos posicion de particula "i"
                 newParticles[startPos].pos_x = particles[startPos].pos_x + dt * particles[startPos].vel_x + 0.5 * pow(dt,2) * ax; 
                 newParticles[startPos].pos_y = particles[startPos].pos_y + dt * particles[startPos].vel_y + 0.5 * pow(dt,2) * ay;
@@ -152,7 +147,7 @@ int main(int argc,char* argv[])
 		particles[i].pos_y = y;
 		particles[i].vel_x = 0.0;
 		particles[i].vel_y = 0.0;
-		particles[i].mass = 1000; 
+		particles[i].mass = 1000;
 	}
 
     rParticles = particles;
@@ -182,6 +177,14 @@ int main(int argc,char* argv[])
     if (err != cudaSuccess)
     {
         fprintf(stderr, "Failed to allocate device d_rParticles (error code %s)!\n", cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    // Copy inputs to device
+    err = cudaMemcpy(d_rParticles, rParticles, nParticles * size, cudaMemcpyHostToDevice);
+    if (err != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to copy rParticles from host to device (error code %s)!\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
     }
 
@@ -228,13 +231,6 @@ int main(int argc,char* argv[])
 
             particles[i] = rParticles[i];
 
-            /*
-            std::cout << "Particle: " << i << std::endl;
-            std::cout << "PosX: " << particles[i].pos_x << std::endl;
-            std::cout << "PosY: " << particles[i].pos_y << std::endl;
-            std::cout << "VelX: " << particles[i].vel_x << std::endl;
-            std::cout << "VelY: " << particles[i].vel_y << std::endl;
-            */
 			/*
 			if(i == 0){
 				p_mid.setFillColor(sf::Color(255, 75, 0));
@@ -254,7 +250,7 @@ int main(int argc,char* argv[])
 			window.draw(p_mid);
 		}
 
-        // Copy inputs to device
+        // Volvemos a pasar las particulas con las posiciones actualizadas al device
         err = cudaMemcpy(d_Particles, particles, nParticles * size, cudaMemcpyHostToDevice);
         if (err != cudaSuccess)
         {
