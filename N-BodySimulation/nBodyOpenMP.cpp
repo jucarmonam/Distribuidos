@@ -10,7 +10,7 @@
 #define PAD 16
 
 /*Variable para el número de particulas*/
-int Nparticles;
+int nParticles;
 double GravityConstant = 1.0;
 
 double softening = 0.1;
@@ -60,15 +60,15 @@ void calculateNewPosition(){
         int thread_id = omp_get_thread_num();
         double ax,ay,az,dx,dy,dz;
 
-        int startPos = (thread_id < (Nparticles) % nThreads) ? ((Nparticles) / nThreads) * thread_id + thread_id : ((Nparticles) / nThreads) * thread_id + (Nparticles) % nThreads;
-        int endPos = (thread_id < (Nparticles) % nThreads) ? startPos + ((Nparticles) / nThreads) : startPos + ((Nparticles) / nThreads) - 1;
+        int startPos = (thread_id < (nParticles) % nThreads) ? ((nParticles) / nThreads) * thread_id + thread_id : ((nParticles) / nThreads) * thread_id + (nParticles) % nThreads;
+        int endPos = (thread_id < (nParticles) % nThreads) ? startPos + ((nParticles) / nThreads) : startPos + ((nParticles) / nThreads) - 1;
 
         for (; startPos <= endPos; startPos++){
             ax=0.0;
             ay=0.0;
-            for (int j = 0; j < Nparticles; j++)
+            for (int j = 0; j < nParticles; j++)
             {
-                //recorremos sobre todas las Nparticles "j"
+                //recorremos sobre todas las nParticles "j"
                 dx = particles[j].pos_x - particles[startPos].pos_x;        
                 dy = particles[j].pos_y - particles[startPos].pos_y;  
 
@@ -96,6 +96,9 @@ void calculateNewPosition(){
 int main(int argc,char* argv[])
 {
     double ax,ay,az,dx,dy,dz;
+    /*Declaración de variable para la escritura del archivo*/
+    FILE *fp;
+    unsigned int timer;
 
 	//Verificar que la cantidad de argumentos sea la correcta
     if ((argc - 1) < R_ARGS)
@@ -104,7 +107,7 @@ int main(int argc,char* argv[])
         exit(1);
     }
 
-    Nparticles = atoi(*(argv + 1));
+    nParticles = atoi(*(argv + 1));
     nThreads = atoi(*(argv + 2));
 
     /*Verificar que el número de hilos sea válido*/
@@ -114,7 +117,7 @@ int main(int argc,char* argv[])
         exit(1);
     }
 
-    if (Nparticles < 0)
+    if (nParticles < 0)
     {
         printf("El numero de particulas debe ser aunquesea 1\n");
         exit(1);
@@ -132,35 +135,43 @@ int main(int argc,char* argv[])
 	sf::CircleShape p_eff2(8);
 
     //Arreglo que contiene las particulas a simular
-    particles = (particle*)malloc(Nparticles * sizeof(particle));
-    newParticles = (particle*)malloc(Nparticles * sizeof(particle));
+    particles = (particle*)malloc(nParticles * sizeof(particle));
+    newParticles = (particle*)malloc(nParticles * sizeof(particle));
 
-    for (unsigned int i = 0; i < Nparticles; i++)
+    for (unsigned int i = 0; i < nParticles; i++)
 	{
 		int x = getRandomInt(0, screen_width), y = getRandomInt(0, screen_height);
 		particles[i].pos_x = x;
 		particles[i].pos_y = y;
 		particles[i].vel_x = 0.0;
 		particles[i].vel_y = 0.0;
-		//if(i == 0){
-			//particles[i].mass = 10000;
-		//}else{
 		particles[i].mass = 1000; 
-		//}
 	}
 
     newParticles = particles;
 
 	sf::Clock clock;
-	double fps;
+    sf::Clock clock2;
+    double meanFps;
+    timer = 0;
     // run the program as long as the window is open
     while (window.isOpen())
     {
 		//Compute the frame rate
 		double currentTime = clock.restart().asSeconds();
-		double fps = 1.0 / currentTime;
+        double fps = 1.0 / currentTime;
+
+        if(timer > 0){
+            meanFps += fps;
+        }
 
 		std::cout << "Fps: " << fps << std::endl;
+        std::cout << "TImer: " << timer << std::endl;
+        //std::cout << "Time: " << clock2.getElapsedTime().asSeconds() << std::endl;
+
+        if(clock2.getElapsedTime().asSeconds() > 5.0f){
+            window.close();
+        }
 
         // check all the window's events that were triggered since the last iteration of the loop
         sf::Event event;
@@ -175,7 +186,7 @@ int main(int argc,char* argv[])
         window.clear(sf::Color::Black);
 
         // Draw particles
-		for (unsigned int i = 0; i < Nparticles; i++)
+		for (unsigned int i = 0; i < nParticles; i++)
 		{
 			double green = getRandomInt(25, 75);
 
@@ -208,8 +219,23 @@ int main(int argc,char* argv[])
 
         // end the current frame
         window.display();
+        timer++;
     }
 
+    meanFps/=timer;
+
+    /* Escribir los resultados en un csv*/
+    fp = fopen("means.csv", "a");
+    if (fp == NULL)
+    {
+        printf("Error al abrir el archivo \n");
+        exit(1);
+    }
+    fprintf(fp, "%d,%d,%f\n", nParticles, nThreads, meanFps);
+    fclose(fp);
+
+    /*Liberar memoria*/
     free(particles);
+    free(newParticles);
     return 0;
 }
