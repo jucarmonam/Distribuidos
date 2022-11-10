@@ -8,7 +8,6 @@ sudo g++ -fopenmp nBodyOpenMP.cpp -o nBodyOpenMP -lsfml-graphics -lsfml-window -
 echo "Compilación terminada, realizando pruebas ..."
 #Pruebas con diferentes parámetros
 #Pruebas con 500 particulas
-echo "\n------------------------------------------------------------------------------\nPRUEBAS 720p\n------------------------------------------------------------------------------\n">> results.txt
 ./nBodyOpenMP 500 1
 ./nBodyOpenMP 500 2
 ./nBodyOpenMP 500 4
@@ -17,7 +16,6 @@ echo "\n------------------------------------------------------------------------
 ./nBodyOpenMP 500 32
 
 #Pruebas con 1000 particulas
-echo "\n------------------------------------------------------------------------------\nPRUEBAS 1080p\n------------------------------------------------------------------------------\n">> results.txt
 ./nBodyOpenMP 1000 1
 ./nBodyOpenMP 1000 2
 ./nBodyOpenMP 1000 4
@@ -26,8 +24,6 @@ echo "\n------------------------------------------------------------------------
 ./nBodyOpenMP 1000 32
 
 #Pruebas con 2000 particulas
-echo "\n------------------------------------------------------------------------------\nPRUEBAS 4k\n------------------------------------------------------------------------------\n">> results.txt
-./nBodyOpenMP 2000 1
 ./nBodyOpenMP 2000 2
 ./nBodyOpenMP 2000 4
 ./nBodyOpenMP 2000 8

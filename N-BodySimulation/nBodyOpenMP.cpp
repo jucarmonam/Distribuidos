@@ -225,7 +225,7 @@ int main(int argc,char* argv[])
     meanFps/=timer;
 
     /* Escribir los resultados en un csv*/
-    fp = fopen("means.csv", "a");
+    fp = fopen("./resultados/meansOMP.csv", "a");
     if (fp == NULL)
     {
         printf("Error al abrir el archivo \n");
