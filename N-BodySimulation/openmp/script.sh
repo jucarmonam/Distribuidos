@@ -30,4 +30,4 @@ echo "Compilación terminada, realizando pruebas ..."
 ./nBodyOpenMP 2000 16
 ./nBodyOpenMP 2000 32
 
-echo "Pruebas terminadas"
+echo "Pruebas terminadas, consulte el archivo 'meansOMP.csv' para un resumen"

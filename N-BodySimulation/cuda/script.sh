@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "------------------------------------------------"
-echo "SIstemas distribuidos"
+echo "Sistemas distribuidos"
 echo "------------------------------------------------"
 echo "Obteniendo información de la GPU del sistema ..."
 #Hacer make del deviceQuery modificado
@@ -37,5 +37,5 @@ else
         done
     done
 
-    echo "Pruebas terminadas, consulte el archivo 'meanssCUDA.csv' para un resumen"
+    echo "Pruebas terminadas, consulte el archivo 'meansCUDA.csv' para un resumen"
 fi
