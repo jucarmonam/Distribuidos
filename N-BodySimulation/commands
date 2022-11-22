@@ -6,3 +6,6 @@ g++ -fopenmp nBodyOpenMP.cpp -o nBodyOpenMP -lsfml-graphics -lsfml-window -lsfml
 
 CUDA
 nvcc nBodyCUDA.cu -o nBodyCUDA -lsfml-graphics -lsfml-window -lsfml-system
+
+MPI
+mpiCC nBodyMPI.cpp -o nBodyMPI -lsfml-graphics -lsfml-window -lsfml-system

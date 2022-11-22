@@ -38,6 +38,7 @@
         "deque": "cpp",
         "map": "cpp",
         "iostream": "cpp",
-        "istream": "cpp"
+        "istream": "cpp",
+        "stdio.h": "c"
     }
 }
