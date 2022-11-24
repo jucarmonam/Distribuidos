@@ -9,3 +9,4 @@ nvcc nBodyCUDA.cu -o nBodyCUDA -lsfml-graphics -lsfml-window -lsfml-system
 
 MPI
 mpiCC nBodyMPI.cpp -o nBodyMPI -lsfml-graphics -lsfml-window -lsfml-system
+mpirun -np 1 --hostfile mpi_hosts ./nBodyMPI 100

@@ -6,8 +6,6 @@
 
 #define R_ARGS 1
 #define DIMENSIONS 3
-//Verificar que el tamaño del PAD sea óptimo
-#define PAD 16
 
 /*Variable para el número de particulas*/
 int nParticles;
@@ -19,9 +17,6 @@ double dt = 0.01;
 //Variables para el tamano de la pantalla
 auto const screen_width = 1280;
 auto const screen_height = 720;
-
-/*Variable para el número de hilos*/
-int nThreads = 0;
 
 struct particle
 {
@@ -51,7 +46,8 @@ sf::Vector2f normalise(sf::Vector2f dif)
 void calculateNewPosition(particle* newParticles, particle* particles, int startPos, int endPos){
     double ax,ay,az,dx,dy,dz;
     int pos = 0;
-    printf("Sdentrooo %d \n", startPos);
+    //printf("Sdentrooo start %d \n", startPos);
+    //printf("Sdentrooo end %d \n", endPos);
     for (; startPos <= endPos; startPos++){
         ax=0.0;
         ay=0.0;
@@ -73,9 +69,15 @@ void calculateNewPosition(particle* newParticles, particle* particles, int start
                 newParticles[pos].pos_x = particles[startPos].pos_x + dt * particles[startPos].vel_x + 0.5 * pow(dt,2) * ax; 
                 newParticles[pos].pos_y = particles[startPos].pos_y + dt * particles[startPos].vel_y + 0.5 * pow(dt,2) * ay;
 
+                std::cout<<"particle: "<<startPos<<"\n";
+                std::cout<<"particles[startPos].vel_x: "<<particles[startPos].vel_x<<"\n";
+                std::cout<<"particles[startPos].vel_y: "<<particles[startPos].vel_y<<"\n";
+                std::cout<<"ax: "<<ax<<"\n";
+                std::cout<<"ay: "<<ay<<"\n";
                 //actualizamos velocidad de particula "i"
                 newParticles[pos].vel_x += dt * ax;
                 newParticles[pos].vel_y += dt * ay;
+                newParticles[pos].mass = particles[startPos].mass;
             }
         }
         pos++;
@@ -151,9 +153,9 @@ int main(int argc,char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &processId);
 
-    MPI_Datatype myparticle;
-    MPI_Type_contiguous(5, MPI_DOUBLE, &myparticle);
-    MPI_Type_commit(&myparticle);
+    MPI_Datatype MPI_PARTICLE;
+    MPI_Type_contiguous(5, MPI_DOUBLE, &MPI_PARTICLE);
+    MPI_Type_commit(&MPI_PARTICLE);
 
     if(processId == 0){
         //Cargar y renderizar pantalla
@@ -164,44 +166,42 @@ int main(int argc,char* argv[])
     }
 
     MPI_Bcast(&mainWindowOpen, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-    printf("\nnode: %i", processId);
-    printf("mainWindowOpen %i \n", mainWindowOpen);
-
+    int iterator = 0;
     // run the program as long as the window is open
     while (window.isOpen() || mainWindowOpen) {
-        int drawed = 0;
-        printf("Adentroo node %d: \n", processId);
         //Calcular las posiciones de las particulas
         int startPos = (processId < (nParticles) % numProcs) ? ((nParticles) / numProcs) * processId + processId : ((nParticles) / numProcs) * processId + (nParticles) % numProcs;
         int endPos = (processId < (nParticles) % numProcs) ? startPos + ((nParticles) / numProcs) : startPos + ((nParticles) / numProcs) - 1;
 
-        int sizeArrays = ((endPos - startPos) + 1) * sizeof(particle);
+        int sizeArrays = ((endPos - startPos) + 1);
         
         particle* newParticles = (particle*)malloc(nParticles * sizeof(particle));
-        particle* rPrParticles = (particle*)malloc(sizeArrays);
-        std::cout<<"The length of the newParticles Array is: "<<sizeof(newParticles)<<"\n";
-        std::cout<<"The length of the given rPrParticles is: "<<sizeof(rPrParticles)<<"\n";
+        particle* rPrParticles = (particle*)malloc(sizeArrays * sizeof(particle));
+        //std::cout<<"The length of the newParticles Array is: "<<sizeof(newParticles)<<"\n";
+        //std::cout<<"The length of the given rPrParticles is: "<<sizeof(rPrParticles)<<"\n";
         if (newParticles == NULL || rPrParticles == NULL) {
             printf("Error al crear las matrices, problema con malloc \n");
             exit(1);
         }
 
-        printf("muerto? \n");
+        //printf("muerto? \n");
+        printf("Adentroo node %d: \n", processId);
         calculateNewPosition(rPrParticles, particles, startPos, endPos);
          
-        printf("vivo \n");
+        //printf("vivo \n");
         //Sincronizar procesos
         MPI_Barrier(MPI_COMM_WORLD); //IMPORTANT 
-        MPI_Gather(rPrParticles,sizeArrays,myparticle,newParticles,sizeArrays, myparticle, 0, MPI_COMM_WORLD);
+        MPI_Gather(rPrParticles,sizeArrays,MPI_PARTICLE,newParticles,sizeArrays, MPI_PARTICLE, 0, MPI_COMM_WORLD);
         
         if(processId == 0){
-            printf("ultra vivo \n");
+            //printf("ultra vivo \n");
             //Compute the frame rate
             double currentTime = clock.restart().asSeconds();
             double fps = 1.0 / currentTime;
 
-            printf("ultra vivox2 \n");
+            //printf("fps %f: \n", fps);
+
+            //printf("ultra vivox2 \n");
             if(timer > 0){
                 meanFps += fps;
             }
@@ -212,7 +212,7 @@ int main(int argc,char* argv[])
             }
             */
 
-            printf("ultra vivox3 \n");
+            //printf("ultra vivox3 \n");
             // check all the window's events that were triggered since the last iteration of the loop
             sf::Event event;
             while (window.pollEvent(event))
@@ -222,11 +222,11 @@ int main(int argc,char* argv[])
                     window.close();
             }
 
-            printf("ultra vivox4 \n");
+            //printf("ultra vivox4 \n");
             // clear the window with black color
             window.clear(sf::Color::Black);
 
-            printf("ultra vivox5 \n");
+            //printf("ultra vivox5 \n");
             // Draw particles
             for (unsigned int i = 0; i < nParticles; i++)
             {
@@ -250,24 +250,38 @@ int main(int argc,char* argv[])
                 window.draw(p_eff);
                 window.draw(p_mid);
             }
-            drawed = 1;
         }
 
-        MPI_Bcast(&drawed, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        printf("liberarrr \n");
-        if(drawed == 1){
-            free(newParticles);
-            free(rPrParticles);
-            MPI_Bcast(&particles, nParticles, myparticle, 0, MPI_COMM_WORLD);
-        }
+        // Wait until is drawn
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        MPI_Bcast(particles, nParticles, MPI_PARTICLE, 0, MPI_COMM_WORLD);
+
+        //printf("liberarrr \n");
+        free(newParticles);
+        free(rPrParticles);
         
         if(processId == 0){
             //rPrParticles = newParticles;
-            //MPI_Bcast(newParticles, 1, myparticle, 0, MPI_COMM_WORLD);
+            //MPI_Bcast(newParticles, 1, MPI_PARTICLE, 0, MPI_COMM_WORLD);
             // end the current frame
             window.display();
             timer++;
         }
+
+        // Stop after N iterations
+        if (iterator == 5000)
+        {
+            break;
+        }
+        
+
+        iterator++;
+        if(processId == 0){
+            std::cout << "Press Enter to continue…"<<std::endl;
+            std::cin.get();
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
     }
 
     if (processId == 0) {
