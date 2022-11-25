@@ -51,6 +51,9 @@ void calculateNewPosition(particle* newParticles, particle* particles, int start
     for (; startPos <= endPos; startPos++){
         ax=0.0;
         ay=0.0;
+        newParticles[pos].vel_x = particles[startPos].vel_x;
+        newParticles[pos].vel_y = particles[startPos].vel_y;
+        newParticles[pos].mass = particles[startPos].mass;
         for (int j = 0; j < nParticles; j++)
         {
             //recorremos sobre todas las nParticles "j"
@@ -65,19 +68,29 @@ void calculateNewPosition(particle* newParticles, particle* particles, int start
             ay = GravityConstant * (dy * inv_r3) * particles[j].mass;
 
             if(startPos != j){
-                //actualizamos posicion de particula "i"
-                newParticles[pos].pos_x = particles[startPos].pos_x + dt * particles[startPos].vel_x + 0.5 * pow(dt,2) * ax; 
-                newParticles[pos].pos_y = particles[startPos].pos_y + dt * particles[startPos].vel_y + 0.5 * pow(dt,2) * ay;
-
-                std::cout<<"particle: "<<startPos<<"\n";
+                                /*
+                std::cout<<"particles[startPos].pos_x: "<<particles[startPos].pos_x<<"\n";
+                std::cout<<"particles[startPos].pos_y: "<<particles[startPos].pos_y<<"\n";
                 std::cout<<"particles[startPos].vel_x: "<<particles[startPos].vel_x<<"\n";
                 std::cout<<"particles[startPos].vel_y: "<<particles[startPos].vel_y<<"\n";
                 std::cout<<"ax: "<<ax<<"\n";
                 std::cout<<"ay: "<<ay<<"\n";
+                */
+
+                //actualizamos posicion de particula "i"
+                newParticles[pos].pos_x = particles[startPos].pos_x + dt * particles[startPos].vel_x + 0.5 * pow(dt,2) * ax; 
+                newParticles[pos].pos_y = particles[startPos].pos_y + dt * particles[startPos].vel_y + 0.5 * pow(dt,2) * ay;
                 //actualizamos velocidad de particula "i"
+                
                 newParticles[pos].vel_x += dt * ax;
                 newParticles[pos].vel_y += dt * ay;
-                newParticles[pos].mass = particles[startPos].mass;
+                /*
+                std::cout<<"particle despuessssssssssss: "<<startPos<<"\n";
+                std::cout<<"newParticles[startPos].pos_x: "<<newParticles[startPos].pos_x<<"\n";
+                std::cout<<"newParticles[startPos].pos_y: "<<newParticles[startPos].pos_y<<"\n";
+                std::cout<<"particles[startPos].vel_x: "<<newParticles[startPos].vel_x<<"\n";
+                std::cout<<"particles[startPos].vel_y: "<<newParticles[startPos].vel_y<<"\n";
+                */
             }
         }
         pos++;
@@ -121,8 +134,6 @@ int main(int argc,char* argv[])
 
     //Arreglo que contiene las particulas a simular
     particles = (particle*)malloc(nParticles * sizeof(particle));
-    //rPrParticles = (particle*)malloc(nParticles * sizeof(particle));
-    //newParticles = (particle*)malloc(nParticles * sizeof(particle));
 
     if (particles == NULL)
     {
@@ -139,8 +150,6 @@ int main(int argc,char* argv[])
 		particles[i].vel_y = 0.0;
 		particles[i].mass = 1000.0; 
 	}
-
-    //newParticles = particles;
 
 	sf::Clock clock;
     sf::Clock clock2;
@@ -175,20 +184,18 @@ int main(int argc,char* argv[])
 
         int sizeArrays = ((endPos - startPos) + 1);
         
+        //Crear la matriz resultantes
         particle* newParticles = (particle*)malloc(nParticles * sizeof(particle));
         particle* rPrParticles = (particle*)malloc(sizeArrays * sizeof(particle));
-        //std::cout<<"The length of the newParticles Array is: "<<sizeof(newParticles)<<"\n";
-        //std::cout<<"The length of the given rPrParticles is: "<<sizeof(rPrParticles)<<"\n";
         if (newParticles == NULL || rPrParticles == NULL) {
             printf("Error al crear las matrices, problema con malloc \n");
             exit(1);
         }
 
-        //printf("muerto? \n");
-        printf("Adentroo node %d: \n", processId);
+        //printf("Adentroo node %d: \n", processId);
+        //rPrParticles = particles;
         calculateNewPosition(rPrParticles, particles, startPos, endPos);
          
-        //printf("vivo \n");
         //Sincronizar procesos
         MPI_Barrier(MPI_COMM_WORLD); //IMPORTANT 
         MPI_Gather(rPrParticles,sizeArrays,MPI_PARTICLE,newParticles,sizeArrays, MPI_PARTICLE, 0, MPI_COMM_WORLD);
@@ -199,9 +206,8 @@ int main(int argc,char* argv[])
             double currentTime = clock.restart().asSeconds();
             double fps = 1.0 / currentTime;
 
-            //printf("fps %f: \n", fps);
+            printf("fps %f: \n", fps);
 
-            //printf("ultra vivox2 \n");
             if(timer > 0){
                 meanFps += fps;
             }
@@ -212,7 +218,6 @@ int main(int argc,char* argv[])
             }
             */
 
-            //printf("ultra vivox3 \n");
             // check all the window's events that were triggered since the last iteration of the loop
             sf::Event event;
             while (window.pollEvent(event))
@@ -221,8 +226,6 @@ int main(int argc,char* argv[])
                 if (event.type == sf::Event::Closed)
                     window.close();
             }
-
-            //printf("ultra vivox4 \n");
             // clear the window with black color
             window.clear(sf::Color::Black);
 
@@ -232,8 +235,8 @@ int main(int argc,char* argv[])
             {
                 double green = getRandomInt(25, 75);
 
-                p_eff.setFillColor(sf::Color(255, 75, 0, green));
-                p_eff2.setFillColor(sf::Color(255, 75, 0, green / 2));
+                p_eff.setFillColor(sf::Color(0, 255, 0, green));
+                p_eff2.setFillColor(sf::Color(0, 255, 0, green / 2));
 
                 //printf("\n newParticles: %i", i);
                 //printf("\n newParticlesX: %f", newParticles[i].pos_y);
@@ -269,6 +272,7 @@ int main(int argc,char* argv[])
             timer++;
         }
 
+        /*
         // Stop after N iterations
         if (iterator == 5000)
         {
@@ -282,6 +286,8 @@ int main(int argc,char* argv[])
             std::cin.get();
         }
         MPI_Barrier(MPI_COMM_WORLD);
+        */
+        
     }
 
     if (processId == 0) {
@@ -299,8 +305,6 @@ int main(int argc,char* argv[])
 
         //Liberar memoria
         free(particles);
-        //free(newParticles);
-        //free(rPrParticles);
     }
 
     MPI_Finalize();
