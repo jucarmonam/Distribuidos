@@ -24,6 +24,7 @@ echo "Compilación terminada, realizando pruebas ..."
 ./nBodyOpenMP 1000 32
 
 #Pruebas con 2000 particulas
+./nBodyOpenMP 2000 1
 ./nBodyOpenMP 2000 2
 ./nBodyOpenMP 2000 4
 ./nBodyOpenMP 2000 8

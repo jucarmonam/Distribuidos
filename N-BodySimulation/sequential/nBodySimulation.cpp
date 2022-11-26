@@ -1,6 +1,5 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include <vector>
 #include <random>
 
 #define R_ARGS 1
@@ -20,11 +19,6 @@ struct particle
 	int mass;
 };
 
-double dist(sf::Vector2f dif)
-{
-	return sqrt((dif.x * dif.x) + (dif.y * dif.y));
-}
-
 std::random_device rng;
 std::mt19937 dev(rng());
 
@@ -32,12 +26,6 @@ int getRandomInt(int low, int high)
 {
 	std::uniform_int_distribution<> var(low, high);
 	return var(rng);
-}
-
-sf::Vector2f normalise(sf::Vector2f dif)
-{
-	double distance = dist(dif);
-	return sf::Vector2f(dif.x / distance, dif.y / distance);
 }
 
 particle* calculateNewPosition(particle* particles){
@@ -94,8 +82,6 @@ int main(int argc,char* argv[])
 
     sf::RenderWindow window(sf::VideoMode(1280, 720), "N-Body");
 
-    std::cout << "Initializing..." << std::endl;
-
     window.setFramerateLimit(60);
 
     auto const screen_width = 1280;
@@ -120,11 +106,7 @@ int main(int argc,char* argv[])
 		particles[i].pos_y = y;
 		particles[i].vel_x = 0.0;
 		particles[i].vel_y = 0.0;
-		//if(i == 0){
-			//particles[i].mass = 10000;
-		//}else{
 		particles[i].mass = 1000; 
-		//}
 	}
 
     timer = 400;
@@ -161,36 +143,9 @@ int main(int argc,char* argv[])
 			p_eff.setFillColor(sf::Color(255, 75, 0, green));
 			p_eff2.setFillColor(sf::Color(255, 75, 0, green / 2));
 
-			/*
-			if(i == 0){
-				p_mid.setFillColor(sf::Color(255, 75, 0));
-			}else{
-				p_mid.setFillColor(sf::Color(255, 255, 255));
-			}
-			*/
-
 			p_mid.setPosition(particles[i].pos_x, particles[i].pos_y);
 			p_eff.setPosition(particles[i].pos_x, particles[i].pos_y);
 			p_eff2.setPosition(particles[i].pos_x, particles[i].pos_y);
-
-			//particles[i].pos_y += particles[i].vel_y;
-			//particles[i].pos_x += particles[i].vel_x;
-
-			//sf::Vector2f dif = sf::Vector2f(particles[i].pos_x, particles[i].pos_y) - sf::Vector2f(mpos);
-			sf::Vector2f normalised = normalise(sf::Vector2f(particles[i].pos_x, particles[i].pos_y));
-
-			//particles[i].vel_x *= 0.999;
-			//particles[i].vel_y *= 0.999;
-			//particles[i].vel_x -= normalised.x / 20.0f;
-			//particles[i].vel_y -= normalised.y / 20.0f;
-
-			//std::cout << "Particle..." + std::to_string(i) << std::endl;
-			//std::cout << particles[i].pos_x << std::endl;
-			//std::cout << particles[i].pos_y << std::endl;
-
-			//std::cout << "ParticleINit..." + std::to_string(i) << std::endl;
-			//std::cout << particles[i].pos_x << std::endl;
-			//std::cout << particles[i].pos_y << std::endl;
 
 			window.draw(p_eff2);
 			window.draw(p_eff);

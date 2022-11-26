@@ -1,6 +1,5 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include <vector>
 #include <random>
 #include "omp.h"
 
@@ -32,11 +31,6 @@ struct particle
 particle* particles;
 particle* newParticles;
 
-double dist(sf::Vector2f dif)
-{
-	return sqrt((dif.x * dif.x) + (dif.y * dif.y));
-}
-
 std::random_device rng;
 std::mt19937 dev(rng());
 
@@ -44,12 +38,6 @@ int getRandomInt(int low, int high)
 {
 	std::uniform_int_distribution<> var(low, high);
 	return var(rng);
-}
-
-sf::Vector2f normalise(sf::Vector2f dif)
-{
-	double distance = dist(dif);
-	return sf::Vector2f(dif.x / distance, dif.y / distance);
 }
 
 void calculateNewPosition(){
@@ -152,17 +140,16 @@ int main(int argc,char* argv[])
 
 	sf::Clock clock;
     sf::Clock clock2;
-    double meanFps;
+    double meanFrameTime;
     timer = 0;
     // run the program as long as the window is open
     while (window.isOpen())
     {
 		//Compute the frame rate
 		double currentTime = clock.restart().asSeconds();
-        double fps = 1.0 / currentTime;
 
         if(timer > 0){
-            meanFps += fps;
+            meanFrameTime += currentTime;
         }
 
         if(clock2.getElapsedTime().asSeconds() > 5.0f){
@@ -191,19 +178,9 @@ int main(int argc,char* argv[])
 
             particles[i] = newParticles[i];
 
-			/*
-			if(i == 0){
-				p_mid.setFillColor(sf::Color(255, 75, 0));
-			}else{
-				p_mid.setFillColor(sf::Color(255, 255, 255));
-			}
-			*/
-
 			p_mid.setPosition(particles[i].pos_x, particles[i].pos_y);
 			p_eff.setPosition(particles[i].pos_x, particles[i].pos_y);
 			p_eff2.setPosition(particles[i].pos_x, particles[i].pos_y);
-
-			sf::Vector2f normalised = normalise(sf::Vector2f(particles[i].pos_x, particles[i].pos_y));
 
 			window.draw(p_eff2);
 			window.draw(p_eff);
@@ -218,16 +195,16 @@ int main(int argc,char* argv[])
         timer++;
     }
 
-    meanFps/=timer;
+    meanFrameTime/=timer;
 
     /* Escribir los resultados en un csv*/
-    fp = fopen("./resultados/meansOMP.csv", "a");
+    fp = fopen("./meansOMP.csv", "a");
     if (fp == NULL)
     {
         printf("Error al abrir el archivo \n");
         exit(1);
     }
-    fprintf(fp, "%d,%d,%f\n", nParticles, nThreads, meanFps);
+    fprintf(fp, "%d,%d,%f\n", nParticles, nThreads, meanFrameTime);
     fclose(fp);
 
     /*Liberar memoria*/

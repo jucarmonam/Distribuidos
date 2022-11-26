@@ -1,6 +1,5 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include <vector>
 #include <random>
 #include <mpi.h>
 
@@ -23,11 +22,6 @@ struct particle
 	double pos_x, pos_y, vel_x, vel_y, mass;
 };
 
-double dist(sf::Vector2f dif)
-{
-	return sqrt((dif.x * dif.x) + (dif.y * dif.y));
-}
-
 std::random_device rng;
 std::mt19937 dev(rng());
 
@@ -37,17 +31,9 @@ int getRandomInt(int low, int high)
 	return var(rng);
 }
 
-sf::Vector2f normalise(sf::Vector2f dif)
-{
-	double distance = dist(dif);
-	return sf::Vector2f(dif.x / distance, dif.y / distance);
-}
-
 void calculateNewPosition(particle* newParticles, particle* particles, int startPos, int endPos){
     double ax,ay,az,dx,dy,dz;
     int pos = 0;
-    //printf("Sdentrooo start %d \n", startPos);
-    //printf("Sdentrooo end %d \n", endPos);
     for (; startPos <= endPos; startPos++){
         ax=0.0;
         ay=0.0;
@@ -68,29 +54,13 @@ void calculateNewPosition(particle* newParticles, particle* particles, int start
             ay = GravityConstant * (dy * inv_r3) * particles[j].mass;
 
             if(startPos != j){
-                                /*
-                std::cout<<"particles[startPos].pos_x: "<<particles[startPos].pos_x<<"\n";
-                std::cout<<"particles[startPos].pos_y: "<<particles[startPos].pos_y<<"\n";
-                std::cout<<"particles[startPos].vel_x: "<<particles[startPos].vel_x<<"\n";
-                std::cout<<"particles[startPos].vel_y: "<<particles[startPos].vel_y<<"\n";
-                std::cout<<"ax: "<<ax<<"\n";
-                std::cout<<"ay: "<<ay<<"\n";
-                */
-
                 //actualizamos posicion de particula "i"
                 newParticles[pos].pos_x = particles[startPos].pos_x + dt * particles[startPos].vel_x + 0.5 * pow(dt,2) * ax; 
                 newParticles[pos].pos_y = particles[startPos].pos_y + dt * particles[startPos].vel_y + 0.5 * pow(dt,2) * ay;
+
                 //actualizamos velocidad de particula "i"
-                
                 newParticles[pos].vel_x += dt * ax;
                 newParticles[pos].vel_y += dt * ay;
-                /*
-                std::cout<<"particle despuessssssssssss: "<<startPos<<"\n";
-                std::cout<<"newParticles[startPos].pos_x: "<<newParticles[startPos].pos_x<<"\n";
-                std::cout<<"newParticles[startPos].pos_y: "<<newParticles[startPos].pos_y<<"\n";
-                std::cout<<"particles[startPos].vel_x: "<<newParticles[startPos].vel_x<<"\n";
-                std::cout<<"particles[startPos].vel_y: "<<newParticles[startPos].vel_y<<"\n";
-                */
             }
         }
         pos++;
@@ -192,8 +162,6 @@ int main(int argc,char* argv[])
             exit(1);
         }
 
-        //printf("Adentroo node %d: \n", processId);
-        //rPrParticles = particles;
         calculateNewPosition(rPrParticles, particles, startPos, endPos);
          
         //Sincronizar procesos
@@ -229,7 +197,6 @@ int main(int argc,char* argv[])
             // clear the window with black color
             window.clear(sf::Color::Black);
 
-            //printf("ultra vivox5 \n");
             // Draw particles
             for (unsigned int i = 0; i < nParticles; i++)
             {
@@ -238,16 +205,11 @@ int main(int argc,char* argv[])
                 p_eff.setFillColor(sf::Color(0, 255, 0, green));
                 p_eff2.setFillColor(sf::Color(0, 255, 0, green / 2));
 
-                //printf("\n newParticles: %i", i);
-                //printf("\n newParticlesX: %f", newParticles[i].pos_y);
-                //printf("\n newParticlesY: %f", newParticles[i].pos_x);
                 particles[i] = newParticles[i];
 
                 p_mid.setPosition(particles[i].pos_x, particles[i].pos_y);
                 p_eff.setPosition(particles[i].pos_x, particles[i].pos_y);
                 p_eff2.setPosition(particles[i].pos_x, particles[i].pos_y);
-
-                sf::Vector2f normalised = normalise(sf::Vector2f(particles[i].pos_x, particles[i].pos_y));
 
                 window.draw(p_eff2);
                 window.draw(p_eff);
