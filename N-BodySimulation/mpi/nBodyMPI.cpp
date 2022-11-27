@@ -124,7 +124,7 @@ int main(int argc,char* argv[])
 	sf::Clock clock;
     sf::Clock clock2;
     sf::RenderWindow window;
-    double meanFps;
+    double meanFrameTime;
     timer = 0;
     int mainWindowOpen = 0;
 
@@ -169,22 +169,16 @@ int main(int argc,char* argv[])
         MPI_Gather(rPrParticles,sizeArrays,MPI_PARTICLE,newParticles,sizeArrays, MPI_PARTICLE, 0, MPI_COMM_WORLD);
         
         if(processId == 0){
-            //printf("ultra vivo \n");
             //Compute the frame rate
             double currentTime = clock.restart().asSeconds();
-            double fps = 1.0 / currentTime;
-
-            printf("fps %f: \n", fps);
 
             if(timer > 0){
-                meanFps += fps;
+                meanFrameTime += currentTime;
             }
 
-            /*
             if(clock2.getElapsedTime().asSeconds() > 5.0f){
                 window.close();
             }
-            */
 
             // check all the window's events that were triggered since the last iteration of the loop
             sf::Event event;
@@ -222,47 +216,26 @@ int main(int argc,char* argv[])
 
         MPI_Bcast(particles, nParticles, MPI_PARTICLE, 0, MPI_COMM_WORLD);
 
-        //printf("liberarrr \n");
         free(newParticles);
         free(rPrParticles);
         
         if(processId == 0){
-            //rPrParticles = newParticles;
-            //MPI_Bcast(newParticles, 1, MPI_PARTICLE, 0, MPI_COMM_WORLD);
-            // end the current frame
             window.display();
             timer++;
         }
-
-        /*
-        // Stop after N iterations
-        if (iterator == 5000)
-        {
-            break;
-        }
-        
-
-        iterator++;
-        if(processId == 0){
-            std::cout << "Press Enter to continue…"<<std::endl;
-            std::cin.get();
-        }
-        MPI_Barrier(MPI_COMM_WORLD);
-        */
-        
     }
 
     if (processId == 0) {
-        meanFps/=timer;
+        meanFrameTime/=timer;
 
         //Escribir los resultados en un csv
-        fp = fopen("./resultados/meansMPI.csv", "a");
+        fp = fopen("./meansMPI.csv", "a");
         if (fp == NULL)
         {
             printf("Error al abrir el archivo \n");
             exit(1);
         }
-        fprintf(fp, "%d,%f\n", nParticles, meanFps);
+        fprintf(fp, "%d,%f\n", nParticles, meanFrameTime);
         fclose(fp);
 
         //Liberar memoria
