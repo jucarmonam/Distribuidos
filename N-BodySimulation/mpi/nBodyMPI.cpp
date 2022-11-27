@@ -174,11 +174,11 @@ int main(int argc,char* argv[])
 
             if(timer > 0){
                 meanFrameTime += currentTime;
-                mainWindowOpen = 0;
             }
 
             if(clock2.getElapsedTime().asSeconds() > 5.0f){
                 window.close();
+                mainWindowOpen = 0;
             }
 
             // check all the window's events that were triggered since the last iteration of the loop
