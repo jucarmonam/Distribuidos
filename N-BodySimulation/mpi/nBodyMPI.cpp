@@ -174,6 +174,7 @@ int main(int argc,char* argv[])
 
             if(timer > 0){
                 meanFrameTime += currentTime;
+                mainWindowOpen = 0;
             }
 
             if(clock2.getElapsedTime().asSeconds() > 5.0f){
@@ -215,6 +216,7 @@ int main(int argc,char* argv[])
         MPI_Barrier(MPI_COMM_WORLD);
 
         MPI_Bcast(particles, nParticles, MPI_PARTICLE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&mainWindowOpen, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         free(newParticles);
         free(rPrParticles);
