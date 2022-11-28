@@ -237,7 +237,7 @@ int main(int argc,char* argv[])
             printf("Error al abrir el archivo \n");
             exit(1);
         }
-        fprintf(fp, "%d,%f\n", nParticles, meanFrameTime);
+        fprintf(fp, "%d,%d,%f\n", nParticles,numProcs,meanFrameTime);
         fclose(fp);
 
         //Liberar memoria
